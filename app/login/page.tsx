@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth as useAuthContext } from "@/contexts";
+import { authApi } from "@/lib/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login, isAuthenticated } = useAuth();
+  const { login: setUserContext, isAuthenticated } = useAuthContext();
   const router = useRouter();
 
   useEffect(() => {
@@ -24,7 +25,16 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login({ email, password });
+      // Call the API to login
+      const response = await authApi.login({ email, password });
+      
+      // Update context with user data
+      setUserContext({
+        username: response.username,
+        email: response.email,
+        role: response.role,
+      });
+      
       router.push("/tasks");
     } catch (err: any) {
       setError(err.response?.data?.message || "Invalid email or password");

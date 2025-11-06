@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts";
 
 export default function Navbar() {
   const { user, logout, isAuthenticated, isAdmin } = useAuth();

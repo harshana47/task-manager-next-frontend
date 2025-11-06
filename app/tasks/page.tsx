@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { taskApi } from "@/lib/tasks";
 import { Task, TaskFilters, TaskStatus, TaskPriority } from "@/types";
+import { useApp } from "@/contexts";
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -18,6 +19,7 @@ export default function TasksPage() {
     sort: "dueDate,asc",
   });
   const router = useRouter();
+  const { addNotification } = useApp();
 
   useEffect(() => {
     loadTasks();
@@ -35,16 +37,11 @@ export default function TasksPage() {
 
       // Handle 403 specifically
       if (error.response?.status === 403) {
-        alert(
-          "Access denied. Please make sure you are logged in with valid credentials."
-        );
+        addNotification('error', 'Access denied. Please make sure you are logged in with valid credentials.');
       } else if (error.response?.status === 401) {
-        // This should be handled by interceptor, but just in case
-        alert("Session expired. Please login again.");
+        addNotification('error', 'Session expired. Please login again.');
       } else {
-        alert(
-          "Failed to load tasks. Please check your connection and try again."
-        );
+        addNotification('error', 'Failed to load tasks. Please check your connection and try again.');
       }
     } finally {
       setLoading(false);
@@ -55,10 +52,11 @@ export default function TasksPage() {
     if (confirm("Are you sure you want to delete this task?")) {
       try {
         await taskApi.deleteTask(id);
+        addNotification('success', 'Task deleted successfully!');
         loadTasks();
       } catch (error) {
         console.error("Failed to delete task:", error);
-        alert("Failed to delete task");
+        addNotification('error', 'Failed to delete task');
       }
     }
   };
